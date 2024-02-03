@@ -11,6 +11,7 @@
 }
 
 .epubPrinter{
+    display: flex;
     position: relative;
     flex-grow: 1;
     outline: 5px solid red;
