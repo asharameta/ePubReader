@@ -31,7 +31,7 @@ function unzipEpub(file){
     zip.loadAsync(file)
             .then(zip => {
                 const coverPath = findCoverPath(zip);
-                const firstPagePath = findFirstPagePath(zip);
+                const sortPaths = sortASC(zip.files)
                     if (coverPath) {
                         zip.file(coverPath).async('base64').then(content =>{
                             const coverImage = document.getElementById('coverImage');
@@ -42,21 +42,18 @@ function unzipEpub(file){
                         alert('No cover image found in the EPUB file.');
                     }
 
-                    if(firstPagePath){
-                        zip.file(firstPagePath).async("string").then(content =>{
-                            const parser = new DOMParser();
-                            //console.log(content);
-                            const xmlDoc = parser.parseFromString(content, "application/xml");
-                            //"application/xhtml+xml"
-                            //"application/xml"
-                            //"text/html"
-                            //"text/xml"
-                            const pagesToPrint = document.getElementById('bookContent');
-                            //console.log(xmlDoc.documentElement);
-                            pagesToPrint.innerHTML = '';
-                            pagesToPrint.appendChild(xmlDoc.documentElement);
-                            pagesToPrint.style.width = 500+'px';
-                        });
+                    if(sortPaths){
+                        const pagesToPrint = document.getElementById('content-container');
+                        pagesToPrint.innerHTML = '';
+                        sortPaths.forEach(path => {
+                            zip.file(path).async("string").then(content =>{
+                                const parser = new DOMParser();
+                                const xmlDoc = parser.parseFromString(content, "application/xml");
+
+                                pagesToPrint.appendChild(xmlDoc.documentElement);
+                                pagesToPrint.style.width = 500+'px';
+                            });
+                        })
                     }else {
                         alert('No first page found in the EPUB file.');
                     }
@@ -71,6 +68,7 @@ function findCoverPath(zip){
     for(const ext of coverExtensions) {
         for(const obj in zip.files){
             if(obj.includes('cover'+ext)){
+                console.log(obj);
                 return obj;
             }
         }
@@ -78,17 +76,32 @@ function findCoverPath(zip){
     return null;
 }
 
-function findFirstPagePath(zip){
-    console.log(zip.files);
-    const pageExtensions = [".xhtml", ".html"];
-    for(const ext of pageExtensions) {
-        for(const obj in zip.files){
-            if(obj.includes('1-1'+ext)){
-                return obj;
+
+function sortASC(files){
+
+    const keysArray = Object.keys(files).filter(isEndsWithXHTMLExtension)
+    .sort((a, b)=>{
+        let [fullAName, prefixA, numberA, subNumberA] = a.match(/([a-z]+)(\d+)(?:-(\d+))?/);
+        let [fullBName, prefixB, numberB, subNumberB] = b.match(/([a-z]+)(\d+)(?:-(\d+))?/);
+
+        if (parseInt(numberA) === parseInt(numberB)) {
+
+            if (!subNumberA && !subNumberB) {
+                return a.localeCompare(b);
             }
+
+            return parseInt(subNumberA || 0) - parseInt(subNumberB || 0);
+        } else {
+            return parseInt(numberA) - parseInt(numberB);
         }
-    }
-    return null;
+    });
+    
+    return keysArray;
+}
+
+
+function isEndsWithXHTMLExtension(element){
+    return ((element.endsWith("xhtml") || element.endsWith("html")) && /\d+/.test(element));
 }
 
 

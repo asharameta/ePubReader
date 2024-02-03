@@ -14,10 +14,24 @@
     display: flex;
     position: relative;
     flex-grow: 1;
+    flex-direction: column;
     outline: 5px solid red;
 }
 
 .wrapper{
     display: flex;
     gap: 10px;
+}
+
+.bookContainer{
+    display: flex;
+    flex-direction: row;
+}
+
+.pagination-container{
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    flex-direction: row;
+    flex-grow: 1;
 }
