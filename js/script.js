@@ -33,10 +33,14 @@ function unzipEpub(file){
                 const coverPath = findCoverPath(zip);
                 const sortPaths = sortASC(zip.files)
                     if (coverPath) {
+                        const coverImage = document.getElementById('coverImage');
+                        coverImage.innerHTML = '';
                         zip.file(coverPath).async('base64').then(content =>{
-                            const coverImage = document.getElementById('coverImage');
+
                             coverImage.src = 'data:image/png;base64,' + content;
-                            coverImage.style.height = 400+'px';
+                            coverImage.style.height = 500+'px';
+                            coverImage.style.position = 'fixed';
+                            coverImage.style.top = 220 +'px';
                         });
                     }else {
                         alert('No cover image found in the EPUB file.');
@@ -68,7 +72,6 @@ function findCoverPath(zip){
     for(const ext of coverExtensions) {
         for(const obj in zip.files){
             if(obj.includes('cover'+ext)){
-                console.log(obj);
                 return obj;
             }
         }
@@ -81,8 +84,8 @@ function sortASC(files){
 
     const keysArray = Object.keys(files).filter(isEndsWithXHTMLExtension)
     .sort((a, b)=>{
-        let [fullAName, prefixA, numberA, subNumberA] = a.match(/([a-z]+)(\d+)(?:-(\d+))?/);
-        let [fullBName, prefixB, numberB, subNumberB] = b.match(/([a-z]+)(\d+)(?:-(\d+))?/);
+        let [fullAName, numberA, subNumberA] = a.match(/(\d+)(?:-(\d+))?/);
+        let [fullBName, numberB, subNumberB] = b.match(/(\d+)(?:-(\d+))?/);
 
         if (parseInt(numberA) === parseInt(numberB)) {
 
@@ -95,7 +98,7 @@ function sortASC(files){
             return parseInt(numberA) - parseInt(numberB);
         }
     });
-    
+
     return keysArray;
 }
 

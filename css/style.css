@@ -6,8 +6,8 @@
     outline: 5px solid red;
     font-weight: 900;
     color: red;
-    width: 700px;
-    height: 500px;
+    width: 400px;
+    height: 200px;
 }
 
 .epubPrinter{
@@ -26,6 +26,7 @@
 .bookContainer{
     display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 
 .pagination-container{
@@ -34,4 +35,9 @@
     align-items: end;
     flex-direction: row;
     flex-grow: 1;
+}
+
+.dropZoneAndCover{
+    display: flex;
+    flex-direction: column;
 }
