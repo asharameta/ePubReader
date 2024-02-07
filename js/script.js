@@ -3,67 +3,96 @@ window.onload = function(e) {
     eventHandler();
 };
 
+var amountOfPages = 0;
+var pages = [];
+var pagesSize = 1;
+var startIndex = 1;
+var endIndex = 0;
+var currentIndex = 1;
+var maxIndex = 0;
+
 function eventHandler(){
     $(".dropZone").on("drop", (e) => {
         if(e.cancelable)e.preventDefault();
 
-        console.log("Drop event on .dropZone");
         let dataTransfer = e.originalEvent.dataTransfer;
 
         if (dataTransfer.items[0].type === "application/epub+zip") {
             const file = dataTransfer.items[0].getAsFile();
-            console.log(`file name = ${file.name}`);
 
             unzipEpub(file);
         }
     });
+
+    $(".NextPageButton").on("click", (e) =>{
+        PextPageButton();
+    })
+
+    $(".PrevPageButton").on("click", (e) =>{
+        PrevPageButton();
+    })
     
     $(".dropZone").on("dragover", (e) => {
         if(e.cancelable)e.preventDefault();
-        console.log("Dragover event on .dropZone");
     });
+}
+
+function ResetValues(){
+    amountOfPages = 0;
+    pages = [];
+    pagesSize = 1;
+    startIndex = 1;
+    endIndex = 0;
+    currentIndex = 1;
+    maxIndex = 0;
+    $(".currentPage").text(currentIndex);
 }
 
 
 function unzipEpub(file){
     const zip = new JSZip();
-    
+    zip.file("mimetype", "application/vnd.oasis.opendocument.spreadsheet");
+    ResetValues();
     zip.loadAsync(file)
             .then(zip => {
                 const coverPath = findCoverPath(zip);
-                const sortPaths = sortASC(zip.files)
+                const sortedChaptersPaths = sortASC(zip.files)
+                PreLoadCalculations(sortedChaptersPaths);
                     if (coverPath) {
                         const coverImage = document.getElementById('coverImage');
                         coverImage.innerHTML = '';
+
                         zip.file(coverPath).async('base64').then(content =>{
 
                             coverImage.src = 'data:image/png;base64,' + content;
                             coverImage.style.height = 500+'px';
                             coverImage.style.position = 'fixed';
                             coverImage.style.top = 220 +'px';
-                        });
+                        })
                     }else {
                         alert('No cover image found in the EPUB file.');
                     }
 
-                    if(sortPaths){
-                        const pagesToPrint = document.getElementById('content-container');
-                        pagesToPrint.innerHTML = '';
-                        sortPaths.forEach(path => {
-                            zip.file(path).async("string").then(content =>{
+                    if(sortedChaptersPaths){
+                        const promises = sortedChaptersPaths.map(path => {
+                           return zip.file(path).async("string").then(content => {
                                 const parser = new DOMParser();
-                                const xmlDoc = parser.parseFromString(content, "application/xml");
+                                const xmlDoc = parser.parseFromString(content, "text/xml");
 
-                                pagesToPrint.appendChild(xmlDoc.documentElement);
-                                pagesToPrint.style.width = 500+'px';
+                                pages.push(xmlDoc.documentElement);
+
+                                //pagesToPrint.appendChild(xmlDoc.documentElement);
                             });
+                        })
+                        Promise.all(promises).then(() => {
+                            Paginate();
                         })
                     }else {
                         alert('No first page found in the EPUB file.');
                     }
             })
             .catch(error => {
-                console.error("Error reading EPUB file:", error);
+                alert("Error reading EPUB file:", error);
             });
 }
 
@@ -82,7 +111,7 @@ function findCoverPath(zip){
 
 function sortASC(files){
 
-    const keysArray = Object.keys(files).filter(isEndsWithXHTMLExtension)
+    const keysArray = Object.keys(files).filter(IsEndsWithXHTMLExtension)
     .sort((a, b)=>{
         let [fullAName, numberA, subNumberA] = a.match(/(\d+)(?:-(\d+))?/);
         let [fullBName, numberB, subNumberB] = b.match(/(\d+)(?:-(\d+))?/);
@@ -103,8 +132,49 @@ function sortASC(files){
 }
 
 
-function isEndsWithXHTMLExtension(element){
+function IsEndsWithXHTMLExtension(element){
     return ((element.endsWith("xhtml") || element.endsWith("html")) && /\d+/.test(element));
 }
 
 
+function Paginate(){
+    const pagesToPrint = document.getElementById('content-container');
+    pagesToPrint.innerHTML = '';
+    console.log(currentIndex);
+    //$(".currentPage").val(currentIndex);
+    pagesToPrint.appendChild(pages[currentIndex-startIndex]);
+}
+
+function PextPageButton(){
+    if(currentIndex<maxIndex){
+        currentIndex++;
+        $(".currentPage").text(currentIndex);
+        Paginate();
+    }
+}
+
+function PrevPageButton(){
+    if(currentIndex>1){
+        currentIndex--;
+        $(".currentPage").text(currentIndex);
+        Paginate();
+    }
+}
+
+
+// var amountOfPages = 0;
+// var pages = [];
+// var pagesSize = 1;
+// var startIndex = 1;
+// var endIndex = 0;
+// var currentIndex = 0;
+// var maxIndex = 0;
+
+function PreLoadCalculations(sorterPaths){
+    amountOfPages = sorterPaths.length;
+    maxIndex = amountOfPages / pagesSize;
+    $(".maxIndexPage").text("/"+maxIndex);
+    if((amountOfPages % pagesSize)>0){
+        maxIndex++;
+    }
+}
