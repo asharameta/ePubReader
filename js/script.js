@@ -26,14 +26,20 @@ function eventHandler(){
 
     $(".NextPageButton").on("click", (e) =>{
         PextPageButton();
+        $("html, body").animate({ scrollTop: 0 }, "fast");
     })
 
     $(".PrevPageButton").on("click", (e) =>{
         PrevPageButton();
+        $("html, body").animate({ scrollTop: 0 }, "fast");
     })
     
     $(".dropZone").on("dragover", (e) => {
         if(e.cancelable)e.preventDefault();
+    });
+
+    $(".burgerIcn").on("click", ()=>{
+        showBurgerMenu();
     });
 }
 
@@ -45,7 +51,7 @@ function ResetValues(){
     endIndex = 0;
     currentIndex = 1;
     maxIndex = 0;
-    $(".currentPage").text(currentIndex);
+    $(".pageAmount").text(currentIndex+"/"+maxIndex);
 }
 
 
@@ -56,33 +62,47 @@ function unzipEpub(file){
     zip.loadAsync(file)
             .then(zip => {
                 const coverPath = findCoverPath(zip);
-                const sortedChaptersPaths = sortASC(zip.files)
+                const sortedChaptersPaths = sortASC(zip.files);
+                sortedChaptersPaths.unshift(coverPath);
                 PreLoadCalculations(sortedChaptersPaths);
-                    if (coverPath) {
-                        const coverImage = document.getElementById('coverImage');
-                        coverImage.innerHTML = '';
 
-                        zip.file(coverPath).async('base64').then(content =>{
-
-                            coverImage.src = 'data:image/png;base64,' + content;
-                            coverImage.style.height = 500+'px';
-                            coverImage.style.position = 'fixed';
-                            coverImage.style.top = 220 +'px';
-                        })
-                    }else {
-                        alert('No cover image found in the EPUB file.');
-                    }
-
+                    let data = "string";
                     if(sortedChaptersPaths){
                         const promises = sortedChaptersPaths.map(path => {
-                           return zip.file(path).async("string").then(content => {
+                           if(path.includes("cover")){
+                            return zip.file(path).async("base64").then(content => {
+                                return new Promise((resolve, reject) => {
+                                    const image = new Image();
+                                    image.onload = function() {
+                                        pages.push(image);
+                                        resolve();
+                                    };
+                                    image.onerror = function() {
+                                        reject(new Error('Image loading error'));
+                                    };
+                                    image.src = 'data:image/png;base64,' + content;
+                                });
+                            });
+                            }
+                           else {
+                            return zip.file(path).async("text").then(content => {
                                 const parser = new DOMParser();
                                 const xmlDoc = parser.parseFromString(content, "text/xml");
-
                                 pages.push(xmlDoc.documentElement);
-
-                                //pagesToPrint.appendChild(xmlDoc.documentElement);
                             });
+                            }
+                        //    return zip.file(path).async(data).then(content => {
+                        //         if(path.includes("cover")){
+                        //             const coverImage = new Image();
+                        //             coverImage.innerHTML = '';
+                        //             coverImage.src = 'data:image/png;base64,' + content;
+                        //             pages.push(coverImage);
+                        //         }else{
+                        //             const parser = new DOMParser();
+                        //             const xmlDoc = parser.parseFromString(content, "text/xml");
+                        //             pages.push(xmlDoc.documentElement);
+                        //         }
+                        //     });
                         })
                         Promise.all(promises).then(() => {
                             Paginate();
@@ -140,15 +160,13 @@ function IsEndsWithXHTMLExtension(element){
 function Paginate(){
     const pagesToPrint = document.getElementById('content-container');
     pagesToPrint.innerHTML = '';
-    console.log(currentIndex);
-    //$(".currentPage").val(currentIndex);
     pagesToPrint.appendChild(pages[currentIndex-startIndex]);
 }
 
 function PextPageButton(){
     if(currentIndex<maxIndex){
         currentIndex++;
-        $(".currentPage").text(currentIndex);
+        $(".pageAmount").text(currentIndex+"/"+maxIndex);
         Paginate();
     }
 }
@@ -156,25 +174,26 @@ function PextPageButton(){
 function PrevPageButton(){
     if(currentIndex>1){
         currentIndex--;
-        $(".currentPage").text(currentIndex);
+        $(".pageAmount").text(currentIndex+"/"+maxIndex);
         Paginate();
     }
 }
 
-
-// var amountOfPages = 0;
-// var pages = [];
-// var pagesSize = 1;
-// var startIndex = 1;
-// var endIndex = 0;
-// var currentIndex = 0;
-// var maxIndex = 0;
-
 function PreLoadCalculations(sorterPaths){
     amountOfPages = sorterPaths.length;
     maxIndex = amountOfPages / pagesSize;
-    $(".maxIndexPage").text("/"+maxIndex);
+    $(".pageAmount").text(currentIndex+"/"+maxIndex);
     if((amountOfPages % pagesSize)>0){
         maxIndex++;
     }
+}
+
+
+function showBurgerMenu(){
+    var element = document.querySelector(".burgerMenu");
+            if (element.style.display === "none") {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
 }

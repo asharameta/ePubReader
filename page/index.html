@@ -11,23 +11,39 @@
     <title>Document</title>
 </head>
 <body>
+    <header class="header">
+        <div class="leftPanel">
+            <a class="headerBtns burgerIcn" href="#">burgerIcn</a>
+        </div>
+        <div class="title">
+            ePubWebReader
+        </div>
+        <div class="rightPanel">
+            <a class="headerBtns">nightModeSwitcher</a>
+            <a class="headerBtns">profileIcn</a>
+            <a class="headerBtns">settingsIcn</a>
+        </div>
+    </header>
+    <div class="burgerMenu">
+        <a href="#">Reader Now</a>
+        <a href="#">My library</a>
+        <a href="#">Book Store</a>
+        <a href="#">Popular</a>
+    </div>
     <div class="wrapper">
         <div class="dropZoneAndCover">
             <div class="dropZone">
                 DROP EPUB HERE!
             </div>
-            <img src="" id="coverImage"/>
         </div>
         <div class="epubPrinter" id="epubPrinter">
             <div class="bookContainer" id="bookContainer">
                 <p id="content-container" class="content-container"></p>
             </div>
             <div class="pagination-container" id="pagination-container">
-                <input type="button" class="PrevPageButton" value="Prev">
-                <span class="currentPage">0</span>
-                <span class="maxIndexPage">/0</span>
-                <span class="maxAmountOfPages"></span>
-                <input type="button" class="NextPageButton"  value="Next">
+                <input type="button" class="PrevPageButton" value="Prev"/>
+                <span class="pageAmount">0/0</span>
+                <input type="button" class="NextPageButton"  value="Next"/>
             </div>
         </div>
     </div>

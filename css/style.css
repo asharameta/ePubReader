@@ -1,9 +1,22 @@
+*{
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+    color:inherit;
+}
+
+input[type=button]{
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
+}
+
 .dropZone{
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    outline: 5px solid red;
+    border: 5px solid red;
     font-weight: 900;
     color: red;
     width: 400px;
@@ -15,29 +28,91 @@
     position: relative;
     flex-grow: 1;
     flex-direction: column;
-    outline: 5px solid red;
+    border: 5px solid red;
+    opacity: 0.7;
 }
 
 .wrapper{
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+    margin-top: 5px;
 }
 
 .bookContainer{
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.header{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0 10px;
+    height: 50px;
+    background: red;
+    justify-content:space-between;
+    align-items: center;
+    z-index: 5;
+}
+
+.header .title{
+    display: flex;
+    color: white;
+    font-weight: 900;
+}
+
+.leftPanel{
+    display: flex;
+}
+
+.rightPanel{
+    display: flex;
+    gap: 20px;
 }
 
 .pagination-container{
     display: flex;
     justify-content: center;
-    align-items: end;
     flex-direction: row;
-    flex-grow: 1;
+    border: 1px solid red;
+    gap: 10px;
 }
 
 .dropZoneAndCover{
     display: flex;
     flex-direction: column;
+}
+
+.burgerMenu{
+    display: none;
+    position: absolute;
+    width: 200px;
+    height: inherit;
+    background-color: red;
+    color: white;
+    z-index: 5;
+
+    text-align: center;
+}
+
+.burgerMenu > *{
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 900;
+}
+
+.headerBtns{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    color: red;
+    border-radius: 20px;
+    width: 150px;
+    height: 30px;
+    font-weight: 900;
 }
